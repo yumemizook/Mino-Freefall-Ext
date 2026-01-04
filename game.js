@@ -225,7 +225,7 @@ function getModeTypeNameFromId(modeId) {
 async function fetchLastCommitDateCached() {
   if (window.__lastCommitDatePromise) return window.__lastCommitDatePromise;
   window.__lastCommitDatePromise = fetch(
-    "https://api.github.com/repos/yumemizook/Mino-Freefall/commits?per_page=1",
+    "https://api.github.com/repos/yumemizook/Mino-Freefall-Ext/commits?per_page=1",
   )
     .then((res) => res.json())
     .then((data) => {

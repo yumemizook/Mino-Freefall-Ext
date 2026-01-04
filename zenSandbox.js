@@ -704,6 +704,10 @@
           try {
             console.log("[ZenSandbox][Config] setZenSandboxConfig called", { updates });
           } catch {}
+          // Ensure helper hooks (including display updater) are attached to this scene
+          try {
+            helper.ensureScene?.(this);
+          } catch {}
           const cfg = helper.saveConfig(updates);
           this.zenSandboxConfig = cfg;
           helper.resetRuntime(this, cfg);
@@ -821,9 +825,8 @@
           return this.zenSandboxConfig || helper.loadConfig();
         };
       }
-      // Provide a fallback display updater for non-GameScene scenes that don't own the in-game UI
-      const sceneKey = scene.scene && scene.scene.key;
-      if (sceneKey && sceneKey !== "GameScene" && typeof scene.updateZenSandboxDisplay !== "function") {
+      // Provide a fallback display updater for scenes that don't own the in-game UI
+      if (typeof scene.updateZenSandboxDisplay !== "function") {
         scene.updateZenSandboxDisplay = function () {
           if (this._zenDisplayForwarding) return;
           try {
