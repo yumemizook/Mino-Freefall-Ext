@@ -1,0 +1,54 @@
+Master:
+    Grade Recognition System: Mirror the behavior of the TAP/Ti. This includes the Grade Recognition System of TAP (already implemented, but needs corrections of TGM3). The grade is displayed throughout the entire game (moved out of the way so that the grade display does not overlap with the hold box.)
+    
+    Section COOL/REGRET: Implement section timing and level breakpoints (*70, *99) with +100 internal level for COOL (tracked separately, added to the total grade) and -1 internal grade for REGRET (deducted from the internal grade) (if not yet implemented), and display the correct indicator if the player obtains it. Ensure that the game uses an internal level calculation that properly reflects the gravity curve, instead of the displayed level.
+
+    The credits roll is similar to TGM2 (TAP), just with different unlock criteria for the M-roll (now named invisible roll).
+
+    The rulesets are already correct as is and do not require further changes.
+
+    20G entry depends on the performance (notably the Section COOLs, which adds +100 to the internal level.)
+
+
+Shirase:
+    The garbage rise behavior is controlled by a "quota" (specific details in the TGM3 modes documentation).
+    The bottommost row is cloned, and all the blocks in that row uses a gray color.
+
+    Monochrome blocks: use mono.png for SRS and monoARS.png for ARS. The explosion effects are not used in the game, so skip this part.
+
+    Big roll: The pieces are 4x the size, with one block now taking up a 2x2 block area. The timing changes are also as in the TGM3 modes documentation.
+
+    Torikan: Implement the time stops as mentioned in the original documentation. If the player fails the torikan, the game ends (play the stack fading animation), displaying a message "Excellent... but let's go better next time" after a second of delay. After 5 seconds after the message is displayed, display the GAME OVER text (return to the main menu 10 seconds after it is displayed.)
+    If the player fails the Lv.500 torikan, they are awarded the grade S5 (assuming no REGRET grade deductions), and S10 if the player fails the Lv.1000 torikan.
+
+
+Easy:
+    Use the @Easy's Scoring.md file for scoring rules and implementation details. It should be as accurate to the documentation as possible, with safety checks.
+    The piece hints outlines are only shown for the first 100 levels. The piece ghost is shown throughout the entire mode.
+
+    Credits roll uses the same hanabi calculation as documented.
+
+
+Sakura:
+    EX stage gating is the same as in documentation.
+    The clear percentage and time are both tracked, as well as the highest stage reached (1-20, EX1 - EX7, then ALL if the player completes all stages) to display the best score in the main menu
+
+    Items:
+    - X-ray: Turns the stack invisible (ensure collisions are still correct, and the ghost piece is still visible and correctly positioned)
+    Each column is periodically revealed (2 frames per column, moves from left to right, 1s cooldown after all 10 columns are cycled through)
+
+    - Mirror: Mirrors the entire stack during ARE.
+
+    - Strobing minos: Each mino will fade in and out in a 0.5s cycle. Each mino has a different cycle starting point, and the minos newly placed in the stack are effected as well.
+
+    - Big block: All blocks are 2x2 in size, and the ghost piece reflects this sizing. The pieces move by 1 block at a time, instead of 2.
+
+    Skipping: No skipping allowed if the total timer is under 30s.
+
+
+Cross-cutting: 
+    Rotation systems are left as is, with torikans in different systems are the same as the documentation.
+
+    Buffer row: The game uses a 4-row buffer zone. Leave it as is.
+
+    Apply the line advance bonuses (triple gives an additional +1, tetris gives +2) for Master and Shirase.

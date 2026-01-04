@@ -1,0 +1,304 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tetris the Grand Master clone idk</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            font-family: 'Courier New', monospace;
+            color: #fff;
+            overflow: hidden; /* Prevent scrollbars in fullscreen mode */
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+        }
+        #game-container {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+        /* Keep canvas text and pixels crisp when scaled */
+        canvas {
+            image-rendering: optimizeSpeed;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+        #mobile-warning {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            text-align: center;
+            padding: 20px;
+        }
+        #mobile-warning h1 {
+            color: #ff0000;
+            font-size: 36px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px #000;
+        }
+        #mobile-warning p {
+            font-size: 18px;
+            line-height: 1.6;
+            max-width: 600px;
+            margin-bottom: 30px;
+        }
+        #mobile-warning .warning-icon {
+            font-size: 60px;
+            color: #ff0000;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        #close-warning {
+            background: #ff0000;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 20px;
+            font-family: 'Courier New', Courier, monospace;
+            cursor: pointer;
+            border-radius: 4px;
+            text-transform: uppercase;
+            font-weight: bold;
+            box-shadow: 0 4px 0 #cc0000;
+            transition: all 0.2s;
+        }
+        #close-warning:hover {
+            background: #cc0000;
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #cc0000;
+        }
+        #close-warning:active {
+            transform: translateY(4px);
+            box-shadow: 0 0px 0 #cc0000;
+        }
+        .controls {
+            display: none; /* Hidden as requested */
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            font-size: 16px;
+            line-height: 1.6;
+            max-width: 800px;
+            z-index: 1000; /* Keep controls on top */
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .controls h3 {
+            color: #ffff00;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            text-align: left;
+        }
+        .control-item {
+            display: flex;
+            justify-content: space-between;
+        }
+        .key {
+            background: #333;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        /* Hide controls on smaller screens to make room for game */
+        @media (max-height: 600px) {
+            .controls {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .controls {
+                font-size: 12px;
+                padding: 10px;
+                max-width: 90%;
+            }
+            .controls-grid {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            .controls h3 {
+                font-size: 16px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Device Warning -->
+    <div id="mobile-warning">
+        <div class="warning-icon">⚠️</div>
+        <h1>MOBILE DEVICE DETECTED</h1>
+        <p><strong>This game is optimized for desktop computers.</strong></p>
+        <p>Mobile devices may experience:</p>
+        <ul style="text-align: left; display: inline-block;">
+            <li>Performance issues and lag</li>
+            <li>Input responsiveness problems (how do you even send inputs without a physical keyboard anyway?)</li>
+            <li>Visual display problems</li>
+        </ul>
+        <p>For the best Tetris experience, please play on a desktop or laptop computer.</p>
+        <button id="close-warning">Continue Anyway</button>
+    </div>
+
+    <div id="game-container"></div>
+    <div class="controls">
+        <h3>Tetris The Grand Master 1 - Controls</h3>
+        <div class="controls-grid">
+            <div class="control-item">
+                <span>Move Left:</span>
+                <span class="key">Z</span>
+            </div>
+            <div class="control-item">
+                <span>Move Right:</span>
+                <span class="key">C</span>
+            </div>
+            <div class="control-item">
+                <span>Soft Drop:</span>
+                <span class="key">S</span>
+            </div>
+            <div class="control-item">
+                <span>Rotate Clockwise:</span>
+                <span class="key">K</span>
+            </div>
+            <div class="control-item">
+                <span>Rotate Counter-Clockwise:</span>
+                <span class="key">SPACE</span> or <span class="key">L</span>
+            </div>
+            <div class="control-item">
+                <span>Hard Drop:</span>
+                <span class="key">X</span>
+            </div>
+            <div class="control-item">
+                <span>Pause:</span>
+                <span class="key">ESC</span>
+            </div>
+            <div class="control-item">
+                <span>Restart (Game Over):</span>
+                <span class="key">ENTER</span>
+            </div>
+        </div>
+        <p style="margin-top: 15px; font-size: 12px; color: #ccc;">
+            Goal: Reach level 999 with the highest grade possible!<br>
+            Grades are earned based on score thresholds. Grand Master requires reaching level 999 with 126,000+ points in under 13:30.
+        </p>
+    </div>
+    
+    <script>
+        // Mobile device detection and warning
+        function isMobileDevice() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                   (navigator.maxTouchPoints && navigator.maxTouchPoints > 2) ||
+                   window.innerWidth <= 768;
+        }
+
+        // Check if user has already dismissed the warning
+        function hasDismissedWarning() {
+            return localStorage.getItem('mobileWarningDismissed') === 'true';
+        }
+
+        function showMobileWarning() {
+            const warning = document.getElementById('mobile-warning');
+            const closeBtn = document.getElementById('close-warning');
+            
+            if (warning) {
+                warning.style.display = 'flex';
+                
+                closeBtn.addEventListener('click', () => {
+                    warning.style.display = 'none';
+                    localStorage.setItem('mobileWarningDismissed', 'true');
+                });
+            }
+        }
+
+        // Initialize mobile warning
+        if (isMobileDevice() && !hasDismissedWarning()) {
+            showMobileWarning();
+        } else {
+            // Hide warning if not on mobile or already dismissed
+            const warning = document.getElementById('mobile-warning');
+            if (warning) {
+                warning.style.display = 'none';
+            }
+        }
+    </script>
+    
+    <!-- Mode System - Load dependencies first -->
+    <script src="modes/modes/BaseMode.js"></script>
+    <script src="modes/modes/TGM2GradingSystem.js"></script>
+    <script src="modes/modes/TGM3GradingSystem.js"></script>
+
+    <!-- Mode classes - Load after dependencies -->
+    <script src="modes/modes/TGM1Mode.js"></script>
+    <script src="modes/modes/Mode20G.js"></script>
+    <script src="modes/modes/OtherModes.js"></script>
+    <script src="modes/modes/TGM2MasterMode.js"></script>
+    <script src="modes/modes/TGM2NormalMode.js"></script>
+    <script src="modes/modes/TGMPlusMode.js"></script>
+    <script src="modes/modes/TADeathMode.js"></script>
+    <script src="modes/modes/Sprint40Mode.js"></script>
+    <script src="modes/modes/MarathonMode.js"></script>
+    <script src="modes/modes/UltraMode.js"></script>
+    <script src="modes/modes/ZenMode.js"></script>
+    <script src="modes/modes/TGM3Mode.js"></script>
+    <script src="modes/modes/TGM3EasyMode.js"></script>
+    <script src="modes/modes/TGM3SakuraMode.js"></script>
+    <script src="modes/modes/TGM3ShiraseMode.js"></script>
+
+    <!-- Mode Manager - Load after mode classes are available -->
+    <script src="modes/modes/ModeManager.js"></script>
+
+    <!-- Zen Sandbox helpers -->
+    <script src="zenSandbox.js"></script>
+
+    <!-- Main Game - Load before PowerupMino since it needs Piece class -->
+    <script src="game.js"></script>
+
+    <!-- Powerup System - Load after game.js since it extends Piece -->
+    <script src="modes/modes/PowerupMino.js"></script>
+
+    <!-- Audio Fix: If you see "Audio key missing" errors, run convert_audio.bat -->
+    <!-- See README_AUDIO_FIX.md for detailed instructions -->
+</body>
+</html>
